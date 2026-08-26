@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.pytest_cache/
+.idea/
+.vscode/
+traces/
+exports/
+data/eval/raw/

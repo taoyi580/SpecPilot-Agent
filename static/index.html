@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SpecPilot · OpenAPI 接口 Agent</title>
+  <style>
+    body { font-family: "Segoe UI", "Microsoft YaHei", sans-serif; margin: 0; background: #f4f6f8; color: #1c2430; }
+    header { background: #16324f; color: #fff; padding: 24px 20px; }
+    header, main { max-width: 960px; margin: 0 auto; }
+    header { max-width: none; }
+    header .wrap { max-width: 960px; margin: 0 auto; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 960px; margin: -16px auto 0; padding: 0 20px; }
+    .stat { background: #fff; border: 1px solid #e2e6ec; border-radius: 10px; padding: 12px; }
+    .stat b { display: block; font-size: 20px; color: #1e4f8a; }
+    .card { background: #fff; border: 1px solid #e2e6ec; border-radius: 12px; padding: 16px; margin: 16px 20px; }
+    main .card { margin-left: 0; margin-right: 0; }
+    main { padding: 8px 20px 40px; }
+    button { background: #1e4f8a; color: #fff; border: 0; border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+    select, input { padding: 8px; border: 1px solid #e2e6ec; border-radius: 8px; }
+    pre { white-space: pre-wrap; background: #f7f9fb; padding: 10px; border-radius: 8px; }
+    .muted { color: #5b6573; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>SpecPilot · OpenAPI 接口 Agent</h1>
+      <p class="muted" style="color:#cfe3fb;">解析图书商城 OpenAPI，规划注册到下单。写操作可审批。Host 白名单 1 个，超时 3 秒，限速 10 次/秒。</p>
+    </div>
+  </header>
+  <section class="stats">
+    <div class="stat"><b id="s-n">36</b><span class="muted">评测故障</span></div>
+    <div class="stat"><b id="s-hit">—</b><span class="muted">Agent 检出</span></div>
+    <div class="stat"><b id="s-st">—</b><span class="muted">Schemathesis 检出</span></div>
+    <div class="stat"><b id="s-fp">—</b><span class="muted">无故障误报</span></div>
+  </section>
+  <main>
+    <div class="card">
+      <label>注入故障</label>
+      <select id="fault"><option value="">无故障（正常下单）</option></select>
+      <p>
+        <button id="go" type="button">规划并执行</button>
+      </p>
+      <p class="muted">评测时自动批准写操作。页面演示同样默认自动批准，便于一眼看完注册到下单。</p>
+    </div>
+    <div class="card">
+      <div id="out" class="muted">还没有运行。</div>
+      <pre id="trace"></pre>
+    </div>
+  </main>
+  <script>
+    const fault = document.getElementById("fault");
+    const out = document.getElementById("out");
+    const trace = document.getElementById("trace");
+    fetch("/api/faults").then(r => r.json()).then(data => {
+      data.items.forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item.id;
+        opt.textContent = item.id + " · " + item.title;
+        fault.appendChild(opt);
+      });
+    });
+    fetch("/api/stats").then(r => r.json()).then(data => {
+      if (data.faults) document.getElementById("s-hit").textContent = data.faults.detected + "/" + data.faults.n;
+      if (data.schemathesis) document.getElementById("s-st").textContent = data.schemathesis.detected + "/" + data.schemathesis.n;
+      if (data.false_positive) document.getElementById("s-fp").textContent = data.false_positive.false_positives + "/" + data.false_positive.n;
+    }).catch(() => {});
+    document.getElementById("go").onclick = async () => {
+      out.textContent = "正在规划并调用接口…";
+      trace.textContent = "";
+      const res = await fetch("/api/run", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ fault: fault.value, auto_approve: true })
+      });
+      const data = await res.json();
+      out.textContent = data.detected
+        ? ("检出问题：" + data.reason)
+        : ("未检出问题。规划步骤：" + (data.plan || []).join(" → "));
+      trace.textContent = (data.history || []).map(step =>
+        step.method + " " + step.path + " → " + step.status
+      ).join("\n");
+    };
+  </script>
+</body>
+</html>

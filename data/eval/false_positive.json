@@ -1,0 +1,127 @@
+{
+  "n": 24,
+  "false_positives": 0,
+  "rate": 0.0,
+  "records": [
+    {
+      "email": "fp0@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp1@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp2@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp3@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp4@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp5@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp6@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp7@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp8@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp9@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp10@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp11@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp12@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp13@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp14@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp15@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp16@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp17@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp18@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp19@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp20@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp21@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp22@shop.local",
+      "false_positive": false,
+      "reason": ""
+    },
+    {
+      "email": "fp23@shop.local",
+      "false_positive": false,
+      "reason": ""
+    }
+  ]
+}

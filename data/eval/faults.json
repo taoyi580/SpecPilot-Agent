@@ -1,0 +1,332 @@
+{
+  "n": 36,
+  "detected": 36,
+  "rate": 1.0,
+  "exportable": 36,
+  "records": [
+    {
+      "id": "C01",
+      "family": "contract",
+      "title": "注册成功响应缺少 id",
+      "detected": true,
+      "reason": "$.id 缺失",
+      "exportable": true,
+      "request_count": 1
+    },
+    {
+      "id": "C02",
+      "family": "contract",
+      "title": "注册成功返回 200 而不是 201",
+      "detected": true,
+      "reason": "状态码 200 不在声明 [201, 400, 422] 中",
+      "exportable": true,
+      "request_count": 1
+    },
+    {
+      "id": "C03",
+      "family": "contract",
+      "title": "登录 token 类型变成整数",
+      "detected": true,
+      "reason": "$.token 应为字符串",
+      "exportable": true,
+      "request_count": 2
+    },
+    {
+      "id": "C04",
+      "family": "contract",
+      "title": "书目列表项缺少 title",
+      "detected": true,
+      "reason": "$.items[0].title 缺失；$.items[1].title 缺失",
+      "exportable": true,
+      "request_count": 4
+    },
+    {
+      "id": "C05",
+      "family": "contract",
+      "title": "图书 price 变成字符串",
+      "detected": true,
+      "reason": "$.price 应为数字",
+      "exportable": true,
+      "request_count": 5
+    },
+    {
+      "id": "C06",
+      "family": "contract",
+      "title": "创建图书返回 200 而不是 201",
+      "detected": true,
+      "reason": "期望状态 [201]，实际 200",
+      "exportable": true,
+      "request_count": 11
+    },
+    {
+      "id": "C07",
+      "family": "contract",
+      "title": "购物车数量为 0 仍接受（schema minimum=1）",
+      "detected": true,
+      "reason": "应当拒绝，实际 201",
+      "exportable": true,
+      "request_count": 10
+    },
+    {
+      "id": "C08",
+      "family": "contract",
+      "title": "订单详情缺少 items",
+      "detected": true,
+      "reason": "订单缺少 items",
+      "exportable": true,
+      "request_count": 1
+    },
+    {
+      "id": "C09",
+      "family": "contract",
+      "title": "订单 total 变成字符串",
+      "detected": true,
+      "reason": "$.total 应为数字",
+      "exportable": true,
+      "request_count": 8
+    },
+    {
+      "id": "C10",
+      "family": "contract",
+      "title": "400 错误体缺少 detail",
+      "detected": true,
+      "reason": "$.detail 缺失",
+      "exportable": true,
+      "request_count": 10
+    },
+    {
+      "id": "C11",
+      "family": "contract",
+      "title": "删除图书后 GET 仍 200",
+      "detected": true,
+      "reason": "期望状态 [404]，实际 200",
+      "exportable": true,
+      "request_count": 12
+    },
+    {
+      "id": "C12",
+      "family": "contract",
+      "title": "图书 status 不在枚举内",
+      "detected": true,
+      "reason": "$.items[0].status 不在枚举内；$.items[1].status 不在枚举内",
+      "exportable": true,
+      "request_count": 4
+    },
+    {
+      "id": "C13",
+      "family": "contract",
+      "title": "列表 count 与 items 长度不一致",
+      "detected": true,
+      "reason": "count 与 items 长度不一致",
+      "exportable": true,
+      "request_count": 4
+    },
+    {
+      "id": "C14",
+      "family": "contract",
+      "title": "创建订单成功响应缺少 id",
+      "detected": true,
+      "reason": "$.id 缺失",
+      "exportable": true,
+      "request_count": 7
+    },
+    {
+      "id": "C15",
+      "family": "contract",
+      "title": "401 响应体不是对象",
+      "detected": true,
+      "reason": "$ 应为对象",
+      "exportable": true,
+      "request_count": 10
+    },
+    {
+      "id": "C16",
+      "family": "contract",
+      "title": "库存为负数仍可创建图书",
+      "detected": true,
+      "reason": "应当拒绝，实际 201",
+      "exportable": true,
+      "request_count": 11
+    },
+    {
+      "id": "C17",
+      "family": "contract",
+      "title": "非法邮箱仍可注册",
+      "detected": true,
+      "reason": "应当拒绝，实际 201",
+      "exportable": true,
+      "request_count": 10
+    },
+    {
+      "id": "C18",
+      "family": "contract",
+      "title": "相同 Idempotency-Key 会创建两笔订单",
+      "detected": true,
+      "reason": "相同 Idempotency-Key 生成了不同订单",
+      "exportable": true,
+      "request_count": 11
+    },
+    {
+      "id": "C19",
+      "family": "contract",
+      "title": "limit=1 仍返回全部图书",
+      "detected": true,
+      "reason": "limit=1 仍返回多条",
+      "exportable": true,
+      "request_count": 10
+    },
+    {
+      "id": "C20",
+      "family": "contract",
+      "title": "created_at 不是日期时间格式",
+      "detected": true,
+      "reason": "$.created_at 不是日期时间",
+      "exportable": true,
+      "request_count": 5
+    },
+    {
+      "id": "C21",
+      "family": "contract",
+      "title": "删除成功 204 却带 JSON 体",
+      "detected": true,
+      "reason": "204 不应有响应体",
+      "exportable": true,
+      "request_count": 11
+    },
+    {
+      "id": "C22",
+      "family": "contract",
+      "title": "更新图书后 price 变成字符串",
+      "detected": true,
+      "reason": "$.price 应为数字",
+      "exportable": true,
+      "request_count": 11
+    },
+    {
+      "id": "C23",
+      "family": "contract",
+      "title": "购物车 book_id 响应变成字符串",
+      "detected": true,
+      "reason": "$.book_id 应为整数",
+      "exportable": true,
+      "request_count": 6
+    },
+    {
+      "id": "C24",
+      "family": "contract",
+      "title": "当前用户信息缺少 email",
+      "detected": true,
+      "reason": "$.email 缺失",
+      "exportable": true,
+      "request_count": 3
+    },
+    {
+      "id": "D01",
+      "family": "d4r",
+      "title": "注册时多余字段可把角色改成 admin（批量赋值）",
+      "detected": true,
+      "reason": "普通注册被提升为 admin",
+      "exportable": true,
+      "request_count": 10
+    },
+    {
+      "id": "D02",
+      "family": "d4r",
+      "title": "搜索参数 q 被忽略",
+      "detected": true,
+      "reason": "搜索词被忽略",
+      "exportable": true,
+      "request_count": 10
+    },
+    {
+      "id": "D03",
+      "family": "d4r",
+      "title": "无效 token 仍能访问 /auth/me",
+      "detected": true,
+      "reason": "应当拒绝，实际 200",
+      "exportable": true,
+      "request_count": 10
+    },
+    {
+      "id": "D04",
+      "family": "d4r",
+      "title": "用户删除后 token 仍可用",
+      "detected": true,
+      "reason": "应当拒绝，实际 200",
+      "exportable": true,
+      "request_count": 11
+    },
+    {
+      "id": "D05",
+      "family": "d4r",
+      "title": "错误密码登录仍返回 token",
+      "detected": true,
+      "reason": "应当拒绝，实际 200",
+      "exportable": true,
+      "request_count": 10
+    },
+    {
+      "id": "D06",
+      "family": "d4r",
+      "title": "未登录可读取他人订单（IDOR）",
+      "detected": true,
+      "reason": "应当拒绝，实际 200",
+      "exportable": true,
+      "request_count": 10
+    },
+    {
+      "id": "D07",
+      "family": "d4r",
+      "title": "错误 Content-Type 导致 500 而不是 415",
+      "detected": true,
+      "reason": "状态码 500 不在声明 [200, 400, 422] 中",
+      "exportable": true,
+      "request_count": 2
+    },
+    {
+      "id": "D08",
+      "family": "d4r",
+      "title": "超大 book_id 返回 500 而不是 404",
+      "detected": true,
+      "reason": "期望状态 [404, 422]，实际 500",
+      "exportable": true,
+      "request_count": 10
+    },
+    {
+      "id": "D09",
+      "family": "d4r",
+      "title": "cover_url 路径穿越被原样保存",
+      "detected": true,
+      "reason": "应当拒绝，实际 201",
+      "exportable": true,
+      "request_count": 11
+    },
+    {
+      "id": "D10",
+      "family": "d4r",
+      "title": "可修改其他用户资料",
+      "detected": true,
+      "reason": "应当拒绝，实际 200",
+      "exportable": true,
+      "request_count": 11
+    },
+    {
+      "id": "D11",
+      "family": "d4r",
+      "title": "空购物车仍能下单",
+      "detected": true,
+      "reason": "应当拒绝，实际 201",
+      "exportable": true,
+      "request_count": 6
+    },
+    {
+      "id": "D12",
+      "family": "d4r",
+      "title": "已支付订单仍可取消",
+      "detected": true,
+      "reason": "应当拒绝，实际 200",
+      "exportable": true,
+      "request_count": 10
+    }
+  ]
+}

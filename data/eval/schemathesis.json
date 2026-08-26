@@ -1,0 +1,203 @@
+{
+  "budget_requests": 200,
+  "budget_sec": 60,
+  "used_requests": 204,
+  "elapsed_sec": 12.06,
+  "n": 36,
+  "detected": 2,
+  "rate": 0.0556,
+  "records": [
+    {
+      "id": "C01",
+      "detected": false,
+      "requests": 17,
+      "note": ""
+    },
+    {
+      "id": "C02",
+      "detected": false,
+      "requests": 17,
+      "note": ""
+    },
+    {
+      "id": "C03",
+      "detected": false,
+      "requests": 17,
+      "note": ""
+    },
+    {
+      "id": "C04",
+      "detected": false,
+      "requests": 17,
+      "note": ""
+    },
+    {
+      "id": "C05",
+      "detected": false,
+      "requests": 17,
+      "note": ""
+    },
+    {
+      "id": "C06",
+      "detected": false,
+      "requests": 17,
+      "note": ""
+    },
+    {
+      "id": "C07",
+      "detected": false,
+      "requests": 17,
+      "note": ""
+    },
+    {
+      "id": "C08",
+      "detected": false,
+      "requests": 17,
+      "note": ""
+    },
+    {
+      "id": "C09",
+      "detected": false,
+      "requests": 17,
+      "note": ""
+    },
+    {
+      "id": "C10",
+      "detected": true,
+      "requests": 17,
+      "note": "post /auth/register status=400"
+    },
+    {
+      "id": "C11",
+      "detected": false,
+      "requests": 17,
+      "note": ""
+    },
+    {
+      "id": "C12",
+      "detected": true,
+      "requests": 17,
+      "note": "get /books status=200"
+    },
+    {
+      "id": "C13",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "C14",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "C15",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "C16",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "C17",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "C18",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "C19",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "C20",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "C21",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "C22",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "C23",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "C24",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "D01",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "D02",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "D03",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "D04",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "D05",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "D06",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "D07",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "D08",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "D09",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "D10",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "D11",
+      "detected": false,
+      "skipped": true
+    },
+    {
+      "id": "D12",
+      "detected": false,
+      "skipped": true
+    }
+  ]
+}
