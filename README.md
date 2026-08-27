@@ -4,17 +4,6 @@
 
 主评测用公开靶场 [VAmPI](https://github.com/erev0s/VAmPI)，标准答案是其 README 的 9 类已知问题。规划不读取漏洞编号。
 
-## 本地演示（自建商城）
-
-```bash
-python -m venv .venv
-.venv\Scripts\python.exe -m pip install -r requirements.txt
-python -m uvicorn main:app --host 127.0.0.1 --port 8001
-```
-
-打开 http://127.0.0.1:8001  
-商城 OpenAPI：http://127.0.0.1:8001/shop/openapi.json
-
 ## 公开集评测
 
 需要本机已有 **Python 3.12**（VAmPI 依赖暂不支持 3.13）：
@@ -34,4 +23,12 @@ python eval_vampi.py
 
 `vulnerable=0` 仍为 3/9，对应 debug 泄露、无限流、弱 JWT，与官方说明一致。开关能关掉的 6 类在这次未命中。数字以 `data/eval/vampi.json` 为准。
 
-自建商城带一组注入故障，用于页面演示，不计入上表公开集成绩。
+## 本地运行
+
+```bash
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+python -m uvicorn main:app --host 127.0.0.1 --port 8001
+```
+
+打开 http://127.0.0.1:8001
