@@ -1,203 +1,227 @@
 {
   "budget_requests": 200,
   "budget_sec": 60,
-  "used_requests": 204,
-  "elapsed_sec": 12.06,
+  "used_requests": 180,
+  "elapsed_sec": 15.14,
   "n": 36,
-  "detected": 2,
-  "rate": 0.0556,
+  "detected": 1,
+  "rate": 0.0278,
   "records": [
     {
       "id": "C01",
       "detected": false,
-      "requests": 17,
+      "requests": 5,
       "note": ""
     },
     {
       "id": "C02",
       "detected": false,
-      "requests": 17,
+      "requests": 5,
       "note": ""
     },
     {
       "id": "C03",
       "detected": false,
-      "requests": 17,
+      "requests": 5,
       "note": ""
     },
     {
       "id": "C04",
       "detected": false,
-      "requests": 17,
+      "requests": 5,
       "note": ""
     },
     {
       "id": "C05",
       "detected": false,
-      "requests": 17,
+      "requests": 5,
       "note": ""
     },
     {
       "id": "C06",
       "detected": false,
-      "requests": 17,
+      "requests": 5,
       "note": ""
     },
     {
       "id": "C07",
       "detected": false,
-      "requests": 17,
+      "requests": 5,
       "note": ""
     },
     {
       "id": "C08",
       "detected": false,
-      "requests": 17,
+      "requests": 5,
       "note": ""
     },
     {
       "id": "C09",
       "detected": false,
-      "requests": 17,
+      "requests": 5,
       "note": ""
     },
     {
       "id": "C10",
       "detected": true,
-      "requests": 17,
+      "requests": 5,
       "note": "post /auth/register status=400"
     },
     {
       "id": "C11",
       "detected": false,
-      "requests": 17,
+      "requests": 5,
       "note": ""
     },
     {
       "id": "C12",
-      "detected": true,
-      "requests": 17,
-      "note": "get /books status=200"
+      "detected": false,
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "C13",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "C14",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "C15",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "C16",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "C17",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "C18",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "C19",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "C20",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "C21",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "C22",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "C23",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "C24",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "D01",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "D02",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "D03",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "D04",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "D05",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "D06",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "D07",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "D08",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "D09",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "D10",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "D11",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     },
     {
       "id": "D12",
       "detected": false,
-      "skipped": true
+      "requests": 5,
+      "note": ""
     }
   ]
 }

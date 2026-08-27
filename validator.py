@@ -50,6 +50,10 @@ def schema_of(op: dict, status: int) -> dict | None:
     return json_body.get("schema")
 
 
+def unwrap_schema(schema: dict | None, spec: dict) -> dict | None:
+    return _unwrap(schema, spec)
+
+
 def _unwrap(schema: dict | None, spec: dict) -> dict | None:
     if not schema:
         return None

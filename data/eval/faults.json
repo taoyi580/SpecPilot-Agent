@@ -3,6 +3,8 @@
   "detected": 36,
   "rate": 1.0,
   "exportable": 36,
+  "planner": "openapi",
+  "note": "规划由 OpenAPI 生成，不读取故障编号；评测只向被测服务注入 X-Fault。",
   "records": [
     {
       "id": "C01",
@@ -29,16 +31,16 @@
       "detected": true,
       "reason": "$.token 应为字符串",
       "exportable": true,
-      "request_count": 2
+      "request_count": 4
     },
     {
       "id": "C04",
       "family": "contract",
       "title": "书目列表项缺少 title",
       "detected": true,
-      "reason": "$.items[0].title 缺失；$.items[1].title 缺失",
+      "reason": "$.items[0].title 缺失",
       "exportable": true,
-      "request_count": 4
+      "request_count": 10
     },
     {
       "id": "C05",
@@ -47,16 +49,16 @@
       "detected": true,
       "reason": "$.price 应为数字",
       "exportable": true,
-      "request_count": 5
+      "request_count": 12
     },
     {
       "id": "C06",
       "family": "contract",
       "title": "创建图书返回 200 而不是 201",
       "detected": true,
-      "reason": "期望状态 [201]，实际 200",
+      "reason": "状态码 200 不在声明 [201, 422] 中",
       "exportable": true,
-      "request_count": 11
+      "request_count": 25
     },
     {
       "id": "C07",
@@ -65,16 +67,16 @@
       "detected": true,
       "reason": "应当拒绝，实际 201",
       "exportable": true,
-      "request_count": 10
+      "request_count": 16
     },
     {
       "id": "C08",
       "family": "contract",
       "title": "订单详情缺少 items",
       "detected": true,
-      "reason": "订单缺少 items",
+      "reason": "$.items 缺失",
       "exportable": true,
-      "request_count": 1
+      "request_count": 20
     },
     {
       "id": "C09",
@@ -83,7 +85,7 @@
       "detected": true,
       "reason": "$.total 应为数字",
       "exportable": true,
-      "request_count": 8
+      "request_count": 20
     },
     {
       "id": "C10",
@@ -92,25 +94,25 @@
       "detected": true,
       "reason": "$.detail 缺失",
       "exportable": true,
-      "request_count": 10
+      "request_count": 3
     },
     {
       "id": "C11",
       "family": "contract",
       "title": "删除图书后 GET 仍 200",
       "detected": true,
-      "reason": "期望状态 [404]，实际 200",
+      "reason": "期望 [404]，实际 200",
       "exportable": true,
-      "request_count": 12
+      "request_count": 30
     },
     {
       "id": "C12",
       "family": "contract",
       "title": "图书 status 不在枚举内",
       "detected": true,
-      "reason": "$.items[0].status 不在枚举内；$.items[1].status 不在枚举内",
+      "reason": "$.items[0].status 不在枚举内",
       "exportable": true,
-      "request_count": 4
+      "request_count": 10
     },
     {
       "id": "C13",
@@ -119,7 +121,7 @@
       "detected": true,
       "reason": "count 与 items 长度不一致",
       "exportable": true,
-      "request_count": 4
+      "request_count": 10
     },
     {
       "id": "C14",
@@ -128,7 +130,7 @@
       "detected": true,
       "reason": "$.id 缺失",
       "exportable": true,
-      "request_count": 7
+      "request_count": 17
     },
     {
       "id": "C15",
@@ -137,7 +139,7 @@
       "detected": true,
       "reason": "$ 应为对象",
       "exportable": true,
-      "request_count": 10
+      "request_count": 9
     },
     {
       "id": "C16",
@@ -146,7 +148,7 @@
       "detected": true,
       "reason": "应当拒绝，实际 201",
       "exportable": true,
-      "request_count": 11
+      "request_count": 26
     },
     {
       "id": "C17",
@@ -155,7 +157,7 @@
       "detected": true,
       "reason": "应当拒绝，实际 201",
       "exportable": true,
-      "request_count": 10
+      "request_count": 3
     },
     {
       "id": "C18",
@@ -164,14 +166,14 @@
       "detected": true,
       "reason": "相同 Idempotency-Key 生成了不同订单",
       "exportable": true,
-      "request_count": 11
+      "request_count": 19
     },
     {
       "id": "C19",
       "family": "contract",
       "title": "limit=1 仍返回全部图书",
       "detected": true,
-      "reason": "limit=1 仍返回多条",
+      "reason": "limit=1 仍返回 2 条",
       "exportable": true,
       "request_count": 10
     },
@@ -182,7 +184,7 @@
       "detected": true,
       "reason": "$.created_at 不是日期时间",
       "exportable": true,
-      "request_count": 5
+      "request_count": 12
     },
     {
       "id": "C21",
@@ -191,7 +193,7 @@
       "detected": true,
       "reason": "204 不应有响应体",
       "exportable": true,
-      "request_count": 11
+      "request_count": 29
     },
     {
       "id": "C22",
@@ -200,7 +202,7 @@
       "detected": true,
       "reason": "$.price 应为数字",
       "exportable": true,
-      "request_count": 11
+      "request_count": 28
     },
     {
       "id": "C23",
@@ -209,7 +211,7 @@
       "detected": true,
       "reason": "$.book_id 应为整数",
       "exportable": true,
-      "request_count": 6
+      "request_count": 15
     },
     {
       "id": "C24",
@@ -218,16 +220,16 @@
       "detected": true,
       "reason": "$.email 缺失",
       "exportable": true,
-      "request_count": 3
+      "request_count": 8
     },
     {
       "id": "D01",
       "family": "d4r",
       "title": "注册时多余字段可把角色改成 admin（批量赋值）",
       "detected": true,
-      "reason": "普通注册被提升为 admin",
+      "reason": "多余字段 role 被写入为 admin",
       "exportable": true,
-      "request_count": 10
+      "request_count": 2
     },
     {
       "id": "D02",
@@ -236,7 +238,7 @@
       "detected": true,
       "reason": "搜索词被忽略",
       "exportable": true,
-      "request_count": 10
+      "request_count": 11
     },
     {
       "id": "D03",
@@ -245,7 +247,7 @@
       "detected": true,
       "reason": "应当拒绝，实际 200",
       "exportable": true,
-      "request_count": 10
+      "request_count": 9
     },
     {
       "id": "D04",
@@ -254,7 +256,7 @@
       "detected": true,
       "reason": "应当拒绝，实际 200",
       "exportable": true,
-      "request_count": 11
+      "request_count": 34
     },
     {
       "id": "D05",
@@ -263,7 +265,7 @@
       "detected": true,
       "reason": "应当拒绝，实际 200",
       "exportable": true,
-      "request_count": 10
+      "request_count": 5
     },
     {
       "id": "D06",
@@ -272,7 +274,7 @@
       "detected": true,
       "reason": "应当拒绝，实际 200",
       "exportable": true,
-      "request_count": 10
+      "request_count": 21
     },
     {
       "id": "D07",
@@ -281,16 +283,16 @@
       "detected": true,
       "reason": "状态码 500 不在声明 [200, 400, 422] 中",
       "exportable": true,
-      "request_count": 2
+      "request_count": 4
     },
     {
       "id": "D08",
       "family": "d4r",
       "title": "超大 book_id 返回 500 而不是 404",
       "detected": true,
-      "reason": "期望状态 [404, 422]，实际 500",
+      "reason": "状态码 500 不在声明 [200, 404, 422] 中",
       "exportable": true,
-      "request_count": 10
+      "request_count": 13
     },
     {
       "id": "D09",
@@ -299,7 +301,7 @@
       "detected": true,
       "reason": "应当拒绝，实际 201",
       "exportable": true,
-      "request_count": 11
+      "request_count": 27
     },
     {
       "id": "D10",
@@ -308,7 +310,7 @@
       "detected": true,
       "reason": "应当拒绝，实际 200",
       "exportable": true,
-      "request_count": 11
+      "request_count": 32
     },
     {
       "id": "D11",
@@ -317,7 +319,7 @@
       "detected": true,
       "reason": "应当拒绝，实际 201",
       "exportable": true,
-      "request_count": 6
+      "request_count": 14
     },
     {
       "id": "D12",
@@ -326,7 +328,7 @@
       "detected": true,
       "reason": "应当拒绝，实际 200",
       "exportable": true,
-      "request_count": 10
+      "request_count": 23
     }
   ]
 }

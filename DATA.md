@@ -1,27 +1,54 @@
 # 评测数据
 
-题目来源和口径写清楚，成绩只采用本仓库脚本实跑结果。
+成绩只采用本仓库脚本的实跑结果。公开集以 VAmPI 的 9 类已知问题为准。自建商城的注入故障只用于本地演示，不计入公开集成绩。
 
-## 被测服务
+## 公开测试集
 
-自建图书商城（`shop.py`），FastAPI 自动生成 OpenAPI 3。主路径覆盖注册、登录、图书、购物车、下单、支付、取消。
+[VAmPI](https://github.com/erev0s/VAmPI)（MIT）。官方 OpenAPI 3，14 条路径。标准答案是 README 里写明的 9 类已知问题。
 
-## 36 个故障
+命令：
 
-| 类别 | 数量 | 说明 |
-| --- | --- | --- |
-| 契约故障 C01–C24 | 24 | 状态码、字段类型、必填项、幂等、分页等，针对本商城 OpenAPI |
-| Defects4REST 分类复现 D01–D12 | 12 | 按 [Defects4REST](https://github.com/ANSWER-OSU/Defects4REST) 的 ST4–ST12 分类，在本商城中实现可触发缺陷。**不是**官方 12 个上游项目的 Docker checkout |
+```bash
+py -3.12 -m venv third_party\vampi\.venv
+third_party\vampi\.venv\Scripts\python.exe -m pip install -r third_party\vampi\requirements.txt werkzeug==2.2.3
+python eval_vampi.py
+```
+
+评测会克隆 VAmPI、按官方 `vulnerable=1/0` 拉起服务。规划只读公开 OpenAPI，不读 9 个漏洞编号。同一套判定规则再打 Schemathesis 的请求记录。
+
+启动时仅把 Flask `debug` 关掉、端口改成 5055，方便评测进程管理。漏洞逻辑未改。
 
 ## 最近一次实跑
 
-命令：`python eval_faults.py`、`python eval_false_positive.py`、`python eval_compare.py`
+`python eval_vampi.py`（2026-08-26）
 
-| 项目 | 结果 |
-| --- | --- |
-| Agent 检出 | 36/36 |
-| 失败请求可导出 curl/pytest | 36/36 |
-| 无故障 24 条误报 | 0/24 |
-| Schemathesis（约 200 次请求、60 秒预算） | 2/36 |
+| 项目 | 口径 | 结果 |
+| --- | --- | --- |
+| Agent | VAmPI 官方 9 类 | **9/9** |
+| 失败请求可导出 curl/pytest | 命中类的最小化请求 | 9/9 |
+| Schemathesis | 同一 9 类判定，约 200 次请求、60 秒 | **1/9**（无限流） |
+| 官方 `vulnerable=0` | 同一套规划再跑 | **3/9** |
 
-Schemathesis 明显更低，是因为它基本不做「注册→加购→下单」这种有状态序列，多数可控故障需要特定步骤才会出现。不要把 75.0% / 50.0% / 误报 4.2% 写进简历，那不是这次脚本的结果。
+`vulnerable=0` 仍命中的 3 类是：debug 接口泄露密码、没有 429 限流、JWT 弱密钥。这和 VAmPI README / `app.py` 的说明一致：关掉开关后，有的问题本来就不会消失。
+
+开关能关掉的 6 类（SQL 注入、越权改密、BOLA、批量赋值、用户名枚举、ReDoS）在 `vulnerable=0` 时均未命中。
+
+## 9 类明细（Agent / Schemathesis / vuln=0）
+
+| 类别 | Agent | Schemathesis | vuln=0 |
+| --- | --- | --- | --- |
+| SQLi Injection | 中 | — | — |
+| Unauthorized Password Change | 中 | — | — |
+| Broken Object Level Authorization | 中 | — | — |
+| Mass Assignment | 中 | — | — |
+| Excessive Data Exposure (debug) | 中 | — | 中 |
+| User and Password Enumeration | 中 | — | — |
+| RegexDOS | 中 | — | — |
+| Lack of Resources & Rate Limiting | 中 | 中 | 中 |
+| JWT weak signing key | 中 | — | 中 |
+
+Agent 实际发了 47 次请求。Schemathesis 发了 196 次、13.58 秒，只打到无限流。
+
+## 被测服务（演示用，不算公开集成绩）
+
+自建图书商城仍可本地演示：解析 OpenAPI、规划注册到下单、写操作可批准。那是产品演示，不是这组公开集数字。

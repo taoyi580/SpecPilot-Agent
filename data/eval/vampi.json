@@ -1,0 +1,377 @@
+{
+  "dataset": "VAmPI",
+  "source": "https://github.com/erev0s/VAmPI",
+  "license": "MIT",
+  "n": 9,
+  "classes": [
+    "SQLi Injection",
+    "Unauthorized Password Change",
+    "Broken Object Level Authorization",
+    "Mass Assignment",
+    "Excessive Data Exposure through debug endpoint",
+    "User and Password Enumeration",
+    "RegexDOS (Denial of Service)",
+    "Lack of Resources & Rate Limiting",
+    "JWT authentication bypass via weak signing key"
+  ],
+  "note": "标准答案是 VAmPI README 的 9 类已知问题。规划只读公开 OpenAPI，不读漏洞编号。",
+  "agent": {
+    "n": 9,
+    "detected": 9,
+    "rate": 1.0,
+    "classes": [
+      {
+        "id": "sqli",
+        "title": "SQLi Injection",
+        "hit": true,
+        "evidence": "用户名含 SQL 片段仍返回用户对象",
+        "method": "GET",
+        "path": "/users/v1/' OR '1'='1",
+        "status": 200,
+        "exportable": true
+      },
+      {
+        "id": "unauth_password",
+        "title": "Unauthorized Password Change",
+        "hit": true,
+        "evidence": "改了 name1 的密码后可用新密码登录",
+        "method": "POST",
+        "path": "/users/v1/login",
+        "status": 200,
+        "exportable": true
+      },
+      {
+        "id": "bola",
+        "title": "Broken Object Level Authorization",
+        "hit": true,
+        "evidence": "用自己的 token 读到 name1 的书 secret",
+        "method": "GET",
+        "path": "/books/v1/bookTitle93",
+        "status": 200,
+        "exportable": true
+      },
+      {
+        "id": "mass_assignment",
+        "title": "Mass Assignment",
+        "hit": true,
+        "evidence": "注册时多传 admin=true 后 /me 显示管理员",
+        "method": "GET",
+        "path": "/me",
+        "status": 200,
+        "exportable": true
+      },
+      {
+        "id": "excessive_data",
+        "title": "Excessive Data Exposure through debug endpoint",
+        "hit": true,
+        "evidence": "debug 接口返回了 password 字段",
+        "method": "GET",
+        "path": "/users/v1/_debug",
+        "status": 200,
+        "exportable": true
+      },
+      {
+        "id": "enumeration",
+        "title": "User and Password Enumeration",
+        "hit": true,
+        "evidence": "错误用户名与错误密码返回了不同提示：Password is not correct for the given username. | Username does not exist",
+        "method": "POST",
+        "path": "/users/v1/login",
+        "status": 200,
+        "exportable": true
+      },
+      {
+        "id": "redos",
+        "title": "RegexDOS (Denial of Service)",
+        "hit": true,
+        "evidence": "恶意邮箱耗时 3016.5 ms",
+        "method": "PUT",
+        "path": "/users/v1/specpilot1/email",
+        "status": 0,
+        "exportable": true
+      },
+      {
+        "id": "rate_limit",
+        "title": "Lack of Resources & Rate Limiting",
+        "hit": true,
+        "evidence": "连续 18 次登录均未返回 429",
+        "method": "POST",
+        "path": "/users/v1/login",
+        "status": 200,
+        "exportable": true
+      },
+      {
+        "id": "jwt_weak",
+        "title": "JWT authentication bypass via weak signing key",
+        "hit": true,
+        "evidence": "用常见弱密钥伪造的 JWT 访问 /me 成功",
+        "method": "GET",
+        "path": "/me",
+        "status": 200,
+        "exportable": true
+      }
+    ],
+    "hit_ids": [
+      "sqli",
+      "unauth_password",
+      "bola",
+      "mass_assignment",
+      "excessive_data",
+      "enumeration",
+      "redos",
+      "rate_limit",
+      "jwt_weak"
+    ],
+    "request_count": 47,
+    "exportable": 9,
+    "plan": [
+      "init_db",
+      "register",
+      "register_admin_field",
+      "login_admin_field",
+      "me_admin_field",
+      "login",
+      "login_wrong_password",
+      "login_unknown_user",
+      "me",
+      "list_users",
+      "debug_users",
+      "sqli_user",
+      "add_book",
+      "list_books",
+      "get_other_book",
+      "put_other_password",
+      "login_other_new_password",
+      "login_restore",
+      "email_redos",
+      "jwt_secret",
+      "jwt_password",
+      "jwt_123456",
+      "jwt_admin",
+      "jwt_jwt",
+      "jwt_token",
+      "jwt_changeme",
+      "jwt_default",
+      "jwt_key",
+      "jwt_test",
+      "jwt_random",
+      "jwt_SECRET_KEY",
+      "jwt_supersecret",
+      "jwt_qwerty",
+      "jwt_dev",
+      "jwt_pass",
+      "rate_login_0",
+      "rate_login_1",
+      "rate_login_2",
+      "rate_login_3",
+      "rate_login_4",
+      "rate_login_5",
+      "rate_login_6",
+      "rate_login_7",
+      "rate_login_8",
+      "rate_login_9",
+      "rate_login_10",
+      "rate_login_11"
+    ]
+  },
+  "schemathesis": {
+    "n": 9,
+    "detected": 1,
+    "rate": 0.1111,
+    "classes": [
+      {
+        "id": "sqli",
+        "title": "SQLi Injection",
+        "hit": false,
+        "evidence": ""
+      },
+      {
+        "id": "unauth_password",
+        "title": "Unauthorized Password Change",
+        "hit": false,
+        "evidence": ""
+      },
+      {
+        "id": "bola",
+        "title": "Broken Object Level Authorization",
+        "hit": false,
+        "evidence": ""
+      },
+      {
+        "id": "mass_assignment",
+        "title": "Mass Assignment",
+        "hit": false,
+        "evidence": ""
+      },
+      {
+        "id": "excessive_data",
+        "title": "Excessive Data Exposure through debug endpoint",
+        "hit": false,
+        "evidence": ""
+      },
+      {
+        "id": "enumeration",
+        "title": "User and Password Enumeration",
+        "hit": false,
+        "evidence": ""
+      },
+      {
+        "id": "redos",
+        "title": "RegexDOS (Denial of Service)",
+        "hit": false,
+        "evidence": ""
+      },
+      {
+        "id": "rate_limit",
+        "title": "Lack of Resources & Rate Limiting",
+        "hit": true,
+        "evidence": "连续 14 次登录均未返回 429",
+        "method": "POST",
+        "path": "/users/v1/login",
+        "status": 0
+      },
+      {
+        "id": "jwt_weak",
+        "title": "JWT authentication bypass via weak signing key",
+        "hit": false,
+        "evidence": ""
+      }
+    ],
+    "hit_ids": [
+      "rate_limit"
+    ],
+    "request_count": 196,
+    "elapsed_sec": 13.58
+  },
+  "vuln0": {
+    "n": 9,
+    "detected": 3,
+    "rate": 0.3333,
+    "classes": [
+      {
+        "id": "sqli",
+        "title": "SQLi Injection",
+        "hit": false,
+        "evidence": ""
+      },
+      {
+        "id": "unauth_password",
+        "title": "Unauthorized Password Change",
+        "hit": false,
+        "evidence": ""
+      },
+      {
+        "id": "bola",
+        "title": "Broken Object Level Authorization",
+        "hit": false,
+        "evidence": ""
+      },
+      {
+        "id": "mass_assignment",
+        "title": "Mass Assignment",
+        "hit": false,
+        "evidence": ""
+      },
+      {
+        "id": "excessive_data",
+        "title": "Excessive Data Exposure through debug endpoint",
+        "hit": true,
+        "evidence": "debug 接口返回了 password 字段",
+        "method": "GET",
+        "path": "/users/v1/_debug",
+        "status": 200,
+        "exportable": true
+      },
+      {
+        "id": "enumeration",
+        "title": "User and Password Enumeration",
+        "hit": false,
+        "evidence": ""
+      },
+      {
+        "id": "redos",
+        "title": "RegexDOS (Denial of Service)",
+        "hit": false,
+        "evidence": ""
+      },
+      {
+        "id": "rate_limit",
+        "title": "Lack of Resources & Rate Limiting",
+        "hit": true,
+        "evidence": "连续 18 次登录均未返回 429",
+        "method": "POST",
+        "path": "/users/v1/login",
+        "status": 200,
+        "exportable": true
+      },
+      {
+        "id": "jwt_weak",
+        "title": "JWT authentication bypass via weak signing key",
+        "hit": true,
+        "evidence": "用常见弱密钥伪造的 JWT 访问 /me 成功",
+        "method": "GET",
+        "path": "/me",
+        "status": 200,
+        "exportable": true
+      }
+    ],
+    "hit_ids": [
+      "excessive_data",
+      "rate_limit",
+      "jwt_weak"
+    ],
+    "request_count": 47,
+    "exportable": 3,
+    "plan": [
+      "init_db",
+      "register",
+      "register_admin_field",
+      "login_admin_field",
+      "me_admin_field",
+      "login",
+      "login_wrong_password",
+      "login_unknown_user",
+      "me",
+      "list_users",
+      "debug_users",
+      "sqli_user",
+      "add_book",
+      "list_books",
+      "get_other_book",
+      "put_other_password",
+      "login_other_new_password",
+      "login_restore",
+      "email_redos",
+      "jwt_secret",
+      "jwt_password",
+      "jwt_123456",
+      "jwt_admin",
+      "jwt_jwt",
+      "jwt_token",
+      "jwt_changeme",
+      "jwt_default",
+      "jwt_key",
+      "jwt_test",
+      "jwt_random",
+      "jwt_SECRET_KEY",
+      "jwt_supersecret",
+      "jwt_qwerty",
+      "jwt_dev",
+      "jwt_pass",
+      "rate_login_0",
+      "rate_login_1",
+      "rate_login_2",
+      "rate_login_3",
+      "rate_login_4",
+      "rate_login_5",
+      "rate_login_6",
+      "rate_login_7",
+      "rate_login_8",
+      "rate_login_9",
+      "rate_login_10",
+      "rate_login_11"
+    ]
+  },
+  "budget_requests": 200,
+  "budget_sec": 60
+}

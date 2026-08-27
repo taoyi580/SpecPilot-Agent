@@ -40,6 +40,8 @@ def main() -> None:
         "detected": detected,
         "rate": round(detected / len(FAULTS), 4),
         "exportable": exportable,
+        "planner": "openapi",
+        "note": "规划由 OpenAPI 生成，不读取故障编号；评测只向被测服务注入 X-Fault。",
         "records": records,
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)

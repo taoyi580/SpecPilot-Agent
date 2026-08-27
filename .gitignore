@@ -8,3 +8,5 @@ __pycache__/
 traces/
 exports/
 data/eval/raw/
+third_party/
+*.log

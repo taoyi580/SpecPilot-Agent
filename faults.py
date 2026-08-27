@@ -1,4 +1,4 @@
-"""36 个评测故障：24 个契约故障 + 12 个按 Defects4REST 分类复现的缺陷。"""
+"""36 个演示故障：24 个契约故障 + 12 个按 Defects4REST 分类实现的缺陷。"""
 
 from __future__ import annotations
 
@@ -168,7 +168,7 @@ _add(
     oracle="schema",
 )
 
-# --- 12 个按 Defects4REST 分类复现的缺陷（不是官方项目 Docker 环境）---
+# --- 12 个按 Defects4REST 分类实现的缺陷 ---
 # 分类来源：https://github.com/ANSWER-OSU/Defects4REST
 _add(
     id="D01",

@@ -84,8 +84,8 @@ class RegisterIn(BaseModel):
 
 
 class LoginIn(BaseModel):
-    email: str
-    password: str
+    email: str = Field(examples=["demo@shop.local", "admin@shop.local"])
+    password: str = Field(examples=["secret12"])
 
 
 class BookIn(BaseModel):

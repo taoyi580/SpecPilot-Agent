@@ -1,4 +1,4 @@
-"""LangGraph 编排：规划 → 写操作审批 → 执行 → 校验 → 失败最小化导出。"""
+"""LangGraph 编排：OpenAPI 规划 → 写操作审批 → 执行 → 契约校验 → 失败导出。"""
 
 from __future__ import annotations
 
@@ -7,15 +7,16 @@ from typing import Any, TypedDict
 
 from langgraph.graph import END, StateGraph
 
-from executor import Executor, WRITE_METHODS
+from executor import Executor
 from exporter import write_exports
 from planner import build_plan, is_write
 from shop import reset_store, shop
-from validator import validate_call
+from validator import expected_status, find_operation, validate_call
 
 
 class AgentState(TypedDict, total=False):
     fault: str
+    spec: dict
     auto_approve: bool
     plan: list
     index: int
@@ -27,6 +28,9 @@ class AgentState(TypedDict, total=False):
     export: dict | None
     done: bool
     request_count: int
+    approved_ids: list
+    use_contract_judge: bool
+    stop_on_first: bool
 
 
 def _fill(value: Any, resources: dict) -> Any:
@@ -62,137 +66,126 @@ def _extract(body: Any, dotted: str) -> Any:
     return current
 
 
-def probes_for(fault: str) -> list[dict]:
-    mapping = {
-        "C06": [
-            {"id": "admin_login", "method": "POST", "path": "/auth/login", "json": {"email": "admin@shop.local", "password": "secret12"}, "extract": {"admin_token": "token"}},
-            {"id": "probe", "method": "POST", "path": "/books", "headers": {"Authorization": "Bearer $admin_token"}, "json": {"title": "新书", "price": 12, "stock": 2}, "expect_status": [201]},
-        ],
-        "C07": [{"id": "probe", "method": "POST", "path": "/cart/items", "auth": True, "json": {"book_id": "$book_id", "quantity": 0}, "expect_reject": True}],
-        "C10": [{"id": "probe", "method": "POST", "path": "/auth/login", "json": {"email": "bad", "password": "x"}, "expect_status": [400]}],
-        "C11": [
-            {"id": "admin_login", "method": "POST", "path": "/auth/login", "json": {"email": "admin@shop.local", "password": "secret12"}, "extract": {"admin_token": "token"}},
-            {"id": "del_book", "method": "DELETE", "path": "/books/$book_id", "headers": {"Authorization": "Bearer $admin_token"}},
-            {"id": "get_deleted", "method": "GET", "path": "/books/$book_id", "expect_status": [404]},
-        ],
-        "C15": [{"id": "probe", "method": "GET", "path": "/auth/me", "headers": {"Authorization": "Bearer bad"}, "expect_reject": True}],
-        "C16": [
-            {"id": "admin_login", "method": "POST", "path": "/auth/login", "json": {"email": "admin@shop.local", "password": "secret12"}, "extract": {"admin_token": "token"}},
-            {"id": "probe", "method": "POST", "path": "/books", "headers": {"Authorization": "Bearer $admin_token"}, "json": {"title": "neg", "price": 10, "stock": -3}, "expect_reject": True},
-        ],
-        "C17": [{"id": "probe", "method": "POST", "path": "/auth/register", "json": {"email": "not-an-email", "password": "secret12", "name": "bad"}, "expect_reject": True}],
-        "C18": [
-            {"id": "add_cart2", "method": "POST", "path": "/cart/items", "auth": True, "json": {"book_id": "$book_id", "quantity": 1}},
-            {"id": "dup_order", "method": "POST", "path": "/orders", "auth": True, "headers": {"Idempotency-Key": "order-1"}, "json": {"address": "重庆市演示路 1 号"}},
-        ],
-        "C19": [{"id": "probe", "method": "GET", "path": "/books?limit=1"}],
-        "C21": [
-            {"id": "admin_login", "method": "POST", "path": "/auth/login", "json": {"email": "admin@shop.local", "password": "secret12"}, "extract": {"admin_token": "token"}},
-            {"id": "del_book", "method": "DELETE", "path": "/books/$book_id", "headers": {"Authorization": "Bearer $admin_token"}},
-        ],
-        "C22": [
-            {"id": "admin_login", "method": "POST", "path": "/auth/login", "json": {"email": "admin@shop.local", "password": "secret12"}, "extract": {"admin_token": "token"}},
-            {"id": "probe", "method": "PATCH", "path": "/books/$book_id", "headers": {"Authorization": "Bearer $admin_token"}, "json": {"price": 8.8}},
-        ],
-        "D01": [{"id": "probe", "method": "POST", "path": "/auth/register", "json": {"email": "mass@shop.local", "password": "secret12", "name": "mass"}}],
-        "D02": [{"id": "probe", "method": "GET", "path": "/books?q=zzzz-no-such-book"}],
-        "D03": [{"id": "probe", "method": "GET", "path": "/auth/me", "headers": {"Authorization": "Bearer expired"}, "expect_reject": True}],
-        "D04": [
-            {"id": "del_me", "method": "DELETE", "path": "/auth/users/$user_id", "auth": True},
-            {"id": "still_me", "method": "GET", "path": "/auth/me", "auth": True, "expect_reject": True},
-        ],
-        "D05": [{"id": "probe", "method": "POST", "path": "/auth/login", "json": {"email": "user@shop.local", "password": "wrong-password"}, "expect_reject": True}],
-        "D06": [{"id": "probe", "method": "GET", "path": "/orders/$order_id", "expect_reject": True}],
-        "D07": [{"id": "probe", "method": "POST", "path": "/auth/login", "content": "email=a&password=b", "headers": {"Content-Type": "text/plain"}, "expect_status": [400, 415, 422]}],
-        "D08": [{"id": "probe", "method": "GET", "path": "/books/999999999999999999999", "expect_status": [404, 422]}],
-        "D09": [
-            {"id": "admin_login", "method": "POST", "path": "/auth/login", "json": {"email": "admin@shop.local", "password": "secret12"}, "extract": {"admin_token": "token"}},
-            {"id": "probe", "method": "POST", "path": "/books", "headers": {"Authorization": "Bearer $admin_token"}, "json": {"title": "evil", "price": 1, "stock": 1, "cover_url": "../../etc/passwd"}, "expect_reject": True},
-        ],
-        "D10": [
-            {"id": "reg2", "method": "POST", "path": "/auth/register", "json": {"email": "other@shop.local", "password": "secret12", "name": "other"}, "extract": {"other_id": "id"}},
-            {"id": "patch_other", "method": "PATCH", "path": "/users/$other_id", "auth": True, "json": {"name": "hacked"}, "expect_reject": True},
-        ],
-        "D11": [{"id": "empty_order", "method": "POST", "path": "/orders", "auth": True, "json": {"address": "n1"}, "expect_reject": True, "before": "add_cart"}],
-        "D12": [{"id": "cancel_paid", "method": "POST", "path": "/orders/$order_id/cancel", "auth": True, "expect_reject": True}],
-    }
-    return mapping.get(fault, [])
-
-
-def insert_probes(plan: list[dict], fault: str) -> list[dict]:
-    probes = probes_for(fault)
-    before = [item for item in probes if item.get("before") == "add_cart"]
-    rest = [item for item in probes if item.get("before") != "add_cart"]
-    out: list[dict] = []
-    for step in plan:
-        if step["id"] == "add_cart" and before:
-            out.extend(before)
-        out.append(step)
-    out.extend(rest)
-    return out
-
-
-def extra_invariants(fault: str, call: dict, resources: dict, history: list) -> str | None:
+def general_invariants(step: dict, call: dict, resources: dict, history: list) -> str | None:
     body = call.get("body")
-    if fault == "C13" and call.get("path", "").startswith("/books") and isinstance(body, dict):
-        items = body.get("items") or []
-        if body.get("count") != len(items):
+    path = call.get("path") or ""
+    status = int(call.get("status") or 0)
+    if isinstance(body, dict) and "count" in body and isinstance(body.get("items"), list):
+        if body.get("count") != len(body["items"]):
             return "count 与 items 长度不一致"
-    if fault == "C18" and call.get("id") == "dup_order":
-        created = [item for item in history if item.get("path") == "/orders" and item.get("method") == "POST" and isinstance(item.get("body"), dict) and item["body"].get("id")]
+    limit = step.get("check_limit")
+    if limit and isinstance(body, dict) and isinstance(body.get("items"), list):
+        if len(body["items"]) > int(limit):
+            return f"limit={limit} 仍返回 {len(body['items'])} 条"
+    if step.get("check_search") and "q=" in path and isinstance(body, dict):
+        needle = ""
+        for part in path.split("q=", 1)[-1].split("&", 1)[:1]:
+            needle = part.lower()
+        items = body.get("items") or []
+        if needle and items:
+            texts = [str(item).lower() for item in items]
+            if not all(needle in text for text in texts):
+                return "搜索词被忽略"
+    if step.get("check_mass_assign") and isinstance(body, dict):
+        field = step["check_mass_assign"]
+        sent = (step.get("json") or {}).get(field)
+        if sent and body.get(field) == sent and str(sent).lower() in {"admin", "root", "superuser"}:
+            return f"多余字段 {field} 被写入为 {sent}"
+    if step.get("check_idempotency"):
+        created = [
+            item
+            for item in history
+            if item.get("method") == "POST"
+            and str(item.get("path") or "").rstrip("/") == "/orders"
+            and isinstance(item.get("body"), dict)
+            and item["body"].get("id")
+            and int(item.get("status") or 0) < 300
+        ]
         ids = {item["body"]["id"] for item in created}
         if len(ids) >= 2:
             return "相同 Idempotency-Key 生成了不同订单"
-    if fault == "C19" and "limit=1" in (call.get("path") or "") and isinstance(body, dict):
-        if len(body.get("items") or []) > 1:
-            return "limit=1 仍返回多条"
-    if fault == "D01" and isinstance(body, dict) and body.get("email") == "mass@shop.local" and body.get("role") == "admin":
-        return "普通注册被提升为 admin"
-    if fault == "D02" and "q=zzzz" in (call.get("path") or "") and isinstance(body, dict):
-        if (body.get("items") or []) and not all("zzzz" in str(item.get("title", "")).lower() for item in body["items"]):
-            return "搜索词被忽略"
-    if fault == "C08" and isinstance(body, dict) and "id" in body and "items" not in body:
-        return "订单缺少 items"
-    if fault == "C09" and isinstance(body, dict) and isinstance(body.get("total"), str):
-        return "订单 total 变成了字符串"
-    if fault == "C15" and isinstance(body, str):
-        return "401 响应体不是对象"
-    if fault == "C21" and int(call.get("status") or 0) == 204 and call.get("body") not in ("", None, {}, []):
-        return "204 仍带有响应体"
-    if fault == "C20" and isinstance(body, dict) and str(body.get("created_at") or "") in {"yesterday", "today"}:
-        return "created_at 不是日期时间"
-    if fault == "D09" and isinstance(body, dict) and ".." in str(body.get("cover_url") or ""):
-        return "封面地址发生路径穿越"
+    expect = step.get("expect_status")
+    if expect and status not in expect:
+        if status >= 500:
+            return f"期望 {expect}，实际 {status}"
+        if 200 <= status < 300:
+            return f"期望 {expect}，实际 {status}"
     return None
 
 
-def judge(step: dict, call: dict, spec: dict, fault: str, resources: dict, history: list) -> str | None:
+def judge(step: dict, call: dict, spec: dict, resources: dict, history: list) -> str | None:
     status = int(call.get("status") or 0)
     body = call.get("body")
     path = (call.get("path") or "").split("?", 1)[0]
-    if step.get("expect_reject") and 200 <= status < 300:
-        return f"应当拒绝，实际 {status}"
-    if step.get("expect_status") and status not in step["expect_status"]:
-        return f"期望状态 {step['expect_status']}，实际 {status}"
+    if step.get("expect_reject"):
+        if 200 <= status < 300:
+            return f"应当拒绝，实际 {status}"
+        if step.get("reject_5xx") and status >= 500:
+            return f"非法请求返回 {status}"
+        if 400 <= status < 500:
+            op = find_operation(spec, call["method"], path)
+            allowed = expected_status(op or {}, status) if op else set()
+            if status in allowed:
+                errors = validate_call(spec, call["method"], path, status, body)
+                if errors:
+                    return "；".join(errors[:3])
+        return None
+    if step.get("boundary") and 400 <= status < 500:
+        return None
     errors = validate_call(spec, call["method"], path, status, body)
     if errors:
         return "；".join(errors[:3])
-    return extra_invariants(fault, {**call, "id": step.get("id")}, resources, history)
+    return general_invariants(step, {**call, "id": step.get("id")}, resources, history)
+
+
+def _capture_resources(step: dict, call: dict, resources: dict) -> None:
+    body = call.get("body")
+    if isinstance(body, dict):
+        token = body.get("auth_token") or body.get("token")
+        extract = step.get("extract") or {}
+        if isinstance(token, str) and token:
+            if "admin_token" in extract:
+                resources["admin_token"] = token
+            if "token" in extract or not extract:
+                resources["token"] = token
+        if extract:
+            for name, dotted in extract.items():
+                value = _extract(body, dotted)
+                if value is not None:
+                    resources[name] = value
+        if step.get("extract_other_book"):
+            mine = str(resources.get("username") or "")
+            items = body.get("Books") or body.get("books") or body.get("items") or []
+            if isinstance(items, list):
+                for item in items:
+                    if not isinstance(item, dict):
+                        continue
+                    owner = str(item.get("user") or item.get("owner") or "")
+                    title = item.get("book_title") or item.get("title")
+                    if title and owner and owner != mine:
+                        resources["other_book"] = title
+                        resources["other_book_owner"] = owner
+                        break
+                if not resources.get("other_book") and items:
+                    first = items[0] if isinstance(items[0], dict) else {}
+                    resources["other_book"] = first.get("book_title") or first.get("title")
+                    resources["other_book_owner"] = first.get("user") or first.get("owner")
 
 
 def tick(state: AgentState) -> AgentState:
-    spec = shop.openapi()
+    spec = state.get("spec") or shop.openapi()
+    state["spec"] = spec
     executor = CURRENT
     if executor is None:
         raise RuntimeError("执行器未初始化")
     plan = state["plan"]
-    if state.get("detected") or state["index"] >= len(plan):
+    if (state.get("stop_on_first", True) and state.get("detected")) or state["index"] >= len(plan):
         state["done"] = True
         return state
     step = plan[state["index"]]
     resources = dict(state.get("resources") or {})
     if is_write(step) and not state.get("auto_approve"):
-        approved = (state.get("approved_ids") or set())
+        approved = set(state.get("approved_ids") or [])
         if step["id"] not in approved:
             state["pending"] = step
             state["done"] = True
@@ -201,6 +194,26 @@ def tick(state: AgentState) -> AgentState:
     if step.get("auth") and resources.get("token") and "Authorization" not in headers:
         headers["Authorization"] = f"Bearer {resources['token']}"
     path = _fill(step["path"], resources)
+    if isinstance(path, str) and "$" in path:
+        history = list(state.get("history") or [])
+        history.append(
+            {
+                "id": step["id"],
+                "method": step["method"],
+                "path": path,
+                "url": path,
+                "status": 0,
+                "body": "skipped: missing path variable",
+                "headers": headers,
+                "json": step.get("json"),
+                "elapsed_ms": 0,
+            }
+        )
+        state["history"] = history
+        state["index"] = state["index"] + 1
+        if state["index"] >= len(plan):
+            state["done"] = True
+        return state
     payload = _fill(step.get("json"), resources)
     call = executor.request(
         step["method"],
@@ -215,22 +228,20 @@ def tick(state: AgentState) -> AgentState:
     history.append(call)
     state["history"] = history
     state["request_count"] = int(state.get("request_count") or 0) + 1
-    if step.get("extract") and isinstance(call.get("body"), dict):
-        for name, dotted in step["extract"].items():
-            value = _extract(call["body"], dotted)
-            if value is not None:
-                resources[name] = value
-        state["resources"] = resources
-    reason = judge(step, call, spec, state.get("fault") or "", resources, history)
-    if reason:
-        state["detected"] = True
-        state["reason"] = reason
-        try:
-            state["export"] = write_exports(state.get("fault") or "run", call)
-        except Exception:
-            state["export"] = None
-        state["done"] = True
-        return state
+    _capture_resources(step, call, resources)
+    state["resources"] = resources
+    if state.get("use_contract_judge", True):
+        reason = judge(step, call, spec, resources, history)
+        if reason:
+            state["detected"] = True
+            state["reason"] = reason
+            try:
+                state["export"] = write_exports(state.get("fault") or "run", call)
+            except Exception:
+                state["export"] = None
+            if state.get("stop_on_first", True):
+                state["done"] = True
+                return state
     state["index"] = state["index"] + 1
     if state["index"] >= len(plan):
         state["done"] = True
@@ -254,11 +265,14 @@ def run_agent(fault: str = "", auto_approve: bool | None = None, email: str = "u
     if auto_approve is None:
         auto_approve = os.getenv("SPECPILOT_AUTO_APPROVE", "1") != "0"
     reset_store()
+    spec = shop.openapi()
+    plan = build_plan(spec, email)
     executor = Executor()
-    plan = insert_probes(build_plan(email), fault)
     CURRENT = executor
+    writes = [step["id"] for step in plan if is_write(step)]
     state: AgentState = {
         "fault": fault,
+        "spec": spec,
         "auto_approve": auto_approve,
         "plan": plan,
         "index": 0,
@@ -270,14 +284,19 @@ def run_agent(fault: str = "", auto_approve: bool | None = None, email: str = "u
         "export": None,
         "done": False,
         "request_count": 0,
-        "approved_ids": {step["id"] for step in plan} if auto_approve else set(),
+        "approved_ids": writes if auto_approve else [],
+        "use_contract_judge": True,
+        "stop_on_first": True,
     }
     try:
-        steps = 0
-        while not state.get("done") and steps < 40:
-            state = tick(state)
-            steps += 1
-        result = state
+        try:
+            result = GRAPH.invoke(state, {"recursion_limit": 48})
+        except Exception:
+            steps = 0
+            while not state.get("done") and steps < 48:
+                state = tick(state)
+                steps += 1
+            result = state
     finally:
         CURRENT = None
         try:
@@ -293,5 +312,63 @@ def run_agent(fault: str = "", auto_approve: bool | None = None, email: str = "u
         "request_count": result.get("request_count") or 0,
         "pending": result.get("pending"),
         "plan": [step["id"] for step in plan],
-        "writes": [step["id"] for step in plan if is_write(step)],
+        "writes": writes,
+    }
+
+
+def run_openapi_agent(
+    spec: dict,
+    executor,
+    *,
+    auto_approve: bool = True,
+    username: str = "specpilot1",
+    password: str = "SpecP1pass",
+    email: str = "specpilot1@mail.com",
+) -> dict:
+    global CURRENT
+    from planner_generic import build_generic_plan
+
+    plan = build_generic_plan(spec, username=username, password=password, email=email)
+    CURRENT = executor
+    writes = [step["id"] for step in plan if is_write(step)]
+    state: AgentState = {
+        "fault": "",
+        "spec": spec,
+        "auto_approve": auto_approve,
+        "plan": plan,
+        "index": 0,
+        "resources": {"username": username, "password": password, "email": email},
+        "history": [],
+        "pending": None,
+        "detected": False,
+        "reason": "",
+        "export": None,
+        "done": False,
+        "request_count": 0,
+        "approved_ids": writes if auto_approve else [],
+        "use_contract_judge": False,
+        "stop_on_first": False,
+    }
+    limit = max(96, len(plan) + 8)
+    try:
+        try:
+            result = GRAPH.invoke(state, {"recursion_limit": limit})
+        except Exception:
+            steps = 0
+            while not state.get("done") and steps < limit:
+                state = tick(state)
+                steps += 1
+            result = state
+    finally:
+        CURRENT = None
+    return {
+        "detected": bool(result.get("detected")),
+        "reason": result.get("reason") or "",
+        "history": result.get("history") or [],
+        "export": result.get("export"),
+        "request_count": result.get("request_count") or 0,
+        "pending": result.get("pending"),
+        "plan": [step["id"] for step in plan],
+        "writes": writes,
+        "resources": result.get("resources") or {},
     }

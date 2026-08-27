@@ -6,7 +6,16 @@ import time
 from urllib.parse import urlparse
 
 
-ALLOWED_HOSTS = {"127.0.0.1:8001", "localhost:8001", "shop.local", "testserver"}
+ALLOWED_HOSTS = {
+    "127.0.0.1:8001",
+    "localhost:8001",
+    "127.0.0.1:5000",
+    "localhost:5000",
+    "127.0.0.1:5055",
+    "localhost:5055",
+    "shop.local",
+    "testserver",
+}
 TIMEOUT_SEC = 3.0
 RATE_PER_SEC = 10
 
