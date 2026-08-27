@@ -1,34 +1,100 @@
 # SpecPilot
 
-解析 OpenAPI，自动规划有状态调用和边界/安全探针。写操作可批准。执行层限制 Host 白名单、单请求超时 3 秒、全局限速 10 次/秒。失败请求可最小化并导出 curl / pytest。
+从 OpenAPI 自动规划并执行有状态接口调用，检查契约偏差和常见安全问题。写操作可批准。执行层限制 Host 白名单、单请求超时 3 秒、全局限速 10 次/秒。命中后把失败请求收成最短的 curl / pytest，便于复现。
 
-主评测用公开靶场 [VAmPI](https://github.com/erev0s/VAmPI)，标准答案是其 README 的 9 类已知问题。规划不读取漏洞编号。
+公开集评测使用 [VAmPI](https://github.com/erev0s/VAmPI)（MIT）。标准答案是其 README 写明的 9 类已知问题。规划只读官方 OpenAPI，不读取漏洞编号。
 
-## 公开集评测
+## 它做什么
 
-需要本机已有 **Python 3.12**（VAmPI 依赖暂不支持 3.13）：
+按 schema 随机发请求，很难打到「先登录、再拿别人的资源」这类问题。SpecPilot 先把文档收成可执行计划，带着会话和资源 ID 往下走，再挂上通用探针。
 
-```bash
-py -3.12 -m venv third_party\vampi\.venv
-third_party\vampi\.venv\Scripts\python.exe -m pip install -r third_party\vampi\requirements.txt werkzeug==2.2.3
-python eval_vampi.py
+```text
+OpenAPI 文档
+    → 规划：注册 / 登录 / 资源读写 + 安全探针
+    → 写操作批准
+    → 受控执行（白名单 · 超时 · 限速）
+    → 对照契约和不变量
+    → 命中请求最小化，导出 curl / pytest
 ```
 
-| 项目 | 口径 | 结果 |
+探针覆盖的问题类型与 VAmPI 公开清单对齐，例如：
+
+- SQL 注入（路径参数）
+- 未授权改密
+- 对象级越权（BOLA）
+- 批量赋值（多余字段提升权限）
+- debug 接口过度暴露
+- 用户名 / 密码枚举
+- 病态输入导致的 RegexDOS
+- 缺少限流
+- JWT 弱密钥
+
+## 公开集结果
+
+被测服务是 VAmPI 官方实现，OpenAPI 3，14 条路径。同一套判定规则打三组实验，数字以 `data/eval/vampi.json` 为准（`python eval_vampi.py`，2026-08-26）。
+
+| 实验 | 口径 | 结果 |
 | --- | --- | --- |
-| Agent | VAmPI README 9 类已知问题 | 9/9 |
+| SpecPilot | 官方 9 类已知问题 | **9/9**（47 次请求） |
 | 可导出 curl / pytest | 命中类的最小化请求 | 9/9 |
-| Schemathesis | 同一 9 类判定，约 200 次请求、60 秒 | 1/9 |
-| 官方 vulnerable=0 | 同一套规划 | 3/9 |
+| [Schemathesis](https://github.com/schemathesis/schemathesis) | 同一 9 类、约 200 次请求 / 60 秒 | **1/9**（196 次请求，只打到无限流） |
+| 官方 `vulnerable=0` | 同一套规划再跑 | **3/9** |
 
-`vulnerable=0` 仍为 3/9，对应 debug 泄露、无限流、弱 JWT，与官方说明一致。开关能关掉的 6 类在这次未命中。数字以 `data/eval/vampi.json` 为准。
+`vulnerable=0` 仍命中的 3 类是 debug 泄露密码、没有 429、JWT 弱密钥。这和 VAmPI 自己的说明一致：关掉开关后，这几类本来就不会消失。开关能关掉的 6 类（SQL 注入、越权改密、BOLA、批量赋值、用户名枚举、ReDoS）在这次均未命中。
 
-## 本地运行
+| 类别 | SpecPilot | Schemathesis | vuln=0 |
+| --- | --- | --- | --- |
+| SQLi Injection | 中 | — | — |
+| Unauthorized Password Change | 中 | — | — |
+| Broken Object Level Authorization | 中 | — | — |
+| Mass Assignment | 中 | — | — |
+| Excessive Data Exposure (debug) | 中 | — | 中 |
+| User and Password Enumeration | 中 | — | — |
+| RegexDOS | 中 | — | — |
+| Lack of Resources & Rate Limiting | 中 | 中 | 中 |
+| JWT weak signing key | 中 | — | 中 |
+
+明细和判定依据见 [DATA.md](DATA.md)。
+
+## 复现评测
+
+需要本机 **Python 3.12**（VAmPI 依赖暂不支持 3.13）。脚本会按官方开关拉起 VAmPI，再跑 Agent 和 Schemathesis。
 
 ```bash
 python -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements.txt
-python -m uvicorn main:app --host 127.0.0.1 --port 8001
+
+py -3.12 -m venv third_party\vampi\.venv
+third_party\vampi\.venv\Scripts\python.exe -m pip install -r third_party\vampi\requirements.txt werkzeug==2.2.3
+
+python eval_vampi.py
 ```
 
-打开 http://127.0.0.1:8001
+VAmPI 源码下在 `third_party/vampi/`，不提交到 Git。评测进程把服务端口放到 `5055`，并关掉 Flask `debug`，漏洞逻辑未改。
+
+## 执行约束
+
+| 约束 | 取值 |
+| --- | --- |
+| Host 白名单 | 仅允许评测与本机回环地址（见 `constraints.py`） |
+| 单请求超时 | 3 秒 |
+| 全局限速 | 10 次 / 秒 |
+| 写操作 | POST / PUT / PATCH / DELETE 需批准后才发出 |
+| 失败导出 | 去掉无关头，写成 curl 和可回放的 pytest |
+
+## 仓库结构
+
+| 路径 | 作用 |
+| --- | --- |
+| `planner_generic.py` | 从 OpenAPI 生成有状态步骤和安全探针 |
+| `agent.py` | LangGraph 编排：规划 → 批准 → 执行 → 校验 → 导出 |
+| `executor.py` | HTTP 执行，走白名单 / 超时 / 限速 |
+| `validator.py` | 对照文档检查状态码、必填字段和基础类型 |
+| `oracles_vampi.py` | 按 VAmPI 公开 9 类对请求记录打分 |
+| `eval_vampi.py` | 拉起靶场，跑 Agent、Schemathesis、`vulnerable=0` |
+| `exporter.py` | 失败请求最小化并导出 |
+| `vampi_runtime.py` | 评测时启动 / 停止 VAmPI |
+| `data/eval/vampi.json` | 最近一次实跑结果 |
+| `DATA.md` | 评测口径和 9 类明细 |
+
+规划器按路径与方法推断注册、登录、资源读写，再挂探针；`oracles_vampi.py` 只根据 HTTP 记录判定，双方都不读取靶场的漏洞编号列表。
