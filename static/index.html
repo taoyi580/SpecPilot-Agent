@@ -10,9 +10,6 @@
     header, main { max-width: 960px; margin: 0 auto; }
     header { max-width: none; }
     header .wrap { max-width: 960px; margin: 0 auto; }
-    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 960px; margin: -16px auto 0; padding: 0 20px; }
-    .stat { background: #fff; border: 1px solid #e2e6ec; border-radius: 10px; padding: 12px; }
-    .stat b { display: block; font-size: 20px; color: #1e4f8a; }
     .card { background: #fff; border: 1px solid #e2e6ec; border-radius: 12px; padding: 16px; margin: 16px 20px; }
     main .card { margin-left: 0; margin-right: 0; }
     main { padding: 8px 20px 40px; }
@@ -26,23 +23,17 @@
   <header>
     <div class="wrap">
       <h1>SpecPilot · OpenAPI 接口 Agent</h1>
-      <p class="muted" style="color:#cfe3fb;">从 OpenAPI 规划有状态调用和安全探针。公开集成绩见页顶 VAmPI 9 类；下方为自建商城演示。</p>
+      <p class="muted" style="color:#cfe3fb;">读取接口说明书，规划连续调用和边界检查，并以受控方式执行和记录结果。</p>
     </div>
   </header>
-  <section class="stats">
-    <div class="stat"><b id="s-n">9</b><span class="muted">VAmPI 公开 9 类</span></div>
-    <div class="stat"><b id="s-hit">—</b><span class="muted">Agent 检出</span></div>
-    <div class="stat"><b id="s-st">—</b><span class="muted">Schemathesis</span></div>
-    <div class="stat"><b id="s-fp">—</b><span class="muted">官方 vuln=0 仍命中</span></div>
-  </section>
   <main>
     <div class="card">
-      <label>商城演示：注入故障</label>
+      <label>选择要检查的接口场景</label>
       <select id="fault"><option value="">无故障（正常下单）</option></select>
       <p>
         <button id="go" type="button">规划并执行</button>
       </p>
-      <p class="muted">下方是自建商城演示，公开集成绩见页顶 VAmPI 数字。</p>
+      <p class="muted">系统会展示调用顺序、接口状态和检查结果。</p>
     </div>
     <div class="card">
       <div id="out" class="muted">还没有运行。</div>
@@ -61,14 +52,6 @@
         fault.appendChild(opt);
       });
     });
-    fetch("/api/stats").then(r => r.json()).then(data => {
-      if (data.vampi) {
-        document.getElementById("s-n").textContent = String(data.vampi.n);
-        document.getElementById("s-hit").textContent = data.vampi.agent.detected + "/" + data.vampi.n;
-        document.getElementById("s-st").textContent = data.vampi.schemathesis.detected + "/" + data.vampi.n;
-        document.getElementById("s-fp").textContent = data.vampi.vuln0.detected + "/" + data.vampi.n;
-      }
-    }).catch(() => {});
     document.getElementById("go").onclick = async () => {
       out.textContent = "正在规划并调用接口…";
       trace.textContent = "";

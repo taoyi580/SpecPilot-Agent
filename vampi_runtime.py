@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import os
+import shutil
+import signal
 import subprocess
 import time
 from pathlib import Path
@@ -18,7 +20,9 @@ _PROC: subprocess.Popen | None = None
 
 
 def python_bin() -> Path:
-    return VAMPI_DIR / ".venv" / "Scripts" / "python.exe"
+    if os.name == "nt":
+        return VAMPI_DIR / ".venv" / "Scripts" / "python.exe"
+    return VAMPI_DIR / ".venv" / "bin" / "python"
 
 
 def ensure_cloned() -> None:
@@ -38,6 +42,23 @@ def patch_runner() -> None:
 
 
 def pids_on_port(port: int) -> list[int]:
+    if os.name != "nt":
+        lsof = shutil.which("lsof")
+        if not lsof:
+            return []
+        try:
+            raw = subprocess.check_output(
+                [lsof, "-ti", f"tcp:{port}"],
+                text=True,
+                errors="ignore",
+            )
+        except Exception:
+            return []
+        return [
+            int(line)
+            for line in raw.splitlines()
+            if line.strip().isdigit() and int(line) > 0
+        ]
     try:
         raw = subprocess.check_output(["netstat", "-ano"], text=True, errors="ignore")
     except Exception:
@@ -59,7 +80,13 @@ def pids_on_port(port: int) -> list[int]:
 
 def kill_port(port: int) -> None:
     for pid in pids_on_port(port):
-        subprocess.run(["taskkill", "/F", "/PID", str(pid)], capture_output=True)
+        if os.name == "nt":
+            subprocess.run(["taskkill", "/F", "/PID", str(pid)], capture_output=True)
+            continue
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except (OSError, ProcessLookupError):
+            continue
 
 
 def wait_up(base_url: str, seconds: float = 30) -> None:

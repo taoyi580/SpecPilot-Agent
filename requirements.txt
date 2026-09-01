@@ -1,8 +1,8 @@
-fastapi
-uvicorn[standard]
-python-dotenv
-httpx
-pydantic[email]
-langgraph
-langchain-core
-schemathesis
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+python-dotenv==1.2.3
+httpx==0.28.1
+pydantic[email]==2.13.5
+langgraph==1.2.11
+langchain-core==1.6.1
+schemathesis==4.25.2
